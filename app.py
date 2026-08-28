@@ -6,26 +6,31 @@ import streamlit as st
 st.sidebar.header("🎨 Personalizar Visual")
 
 # Seletores de cores e fontes para o usuário
-cor_fundo = st.sidebar.color_picker("Cor do Fundo", "#FFFFFF")
-cor_texto = st.sidebar.color_picker("Cor do Texto", "#333333")
+cor_fundo = st.sidebar.color_picker("Cor do Fundo", "#F0F2F6")
+cor_texto = st.sidebar.color_picker("Cor do Texto", "#000000")
 cor_topicos = st.sidebar.color_picker("Cor dos Títulos", "#005C99")
 fonte = st.sidebar.selectbox("Estilo da Fonte", ["sans-serif", "Arial", "Courier New", "Georgia", "Verdana"])
 
-# Aplicação das escolhas usando CSS customizado
+# Aplicação das escolhas usando CSS customizado "forçado"
 estilo_css = f"""
 <style>
-    /* Muda a cor de fundo do aplicativo inteiro */
-    .stApp {{
-        background-color: {cor_fundo};
+    /* Fundo da aplicação */
+    [data-testid="stAppViewContainer"] {{
+        background-color: {cor_fundo} !important;
     }}
-    /* Muda a fonte e a cor do texto padrão */
-    html, body, [class*="css"] {{
-        font-family: '{fonte}', sans-serif;
-        color: {cor_texto};
+    /* Fundo do cabeçalho superior (para não ficar uma faixa branca) */
+    [data-testid="stHeader"] {{
+        background-color: transparent !important;
     }}
-    /* Muda a cor apenas dos títulos e subtítulos */
-    h1, h2, h3 {{
+    /* Cor do texto geral e fonte */
+    p, span, label, div {{
+        color: {cor_texto} !important;
+        font-family: {fonte} !important;
+    }}
+    /* Cor e fonte dos títulos */
+    h1, h2, h3, h4, h5, h6 {{
         color: {cor_topicos} !important;
+        font-family: {fonte} !important;
     }}
 </style>
 """
