@@ -1,63 +1,68 @@
-# SISTEMA SOLIDÁRIO DE GESTÃO DE DOAÇÕES
+import streamlit as st
 
-estoque_doacoes = {}
+# Inicializa o "banco de dados" na memória da sessão do usuário
+if 'estoque' not in st.session_state:
+    st.session_state.estoque = {}
 
-def cadastrar_doacao():
-    item = input("Digite o nome do item para doação (ex: Arroz, Roupas): ").strip().upper()
-    try:
-        quantidade = int(input(f"Digite a quantidade de '{item}': "))
-        if item in estoque_doacoes:
-            estoque_doacoes[item] += quantidade
+# Configuração visual do título da página
+st.title("📦 Sistema Solidário de Doações")
+st.write("Bem-vindo ao portal de controle de estoque da ONG.")
+
+st.divider() # Cria uma linha separadora visual
+
+# SESSÃO 1: CADASTRO DE DOAÇÕES
+st.header("➕ Cadastrar Nova Doação")
+
+# Organiza a tela em duas colunas para os campos de digitação
+col1, col2 = st.columns(2)
+with col1:
+    novo_item = st.text_input("Nome do Item:", placeholder="Ex: Arroz, Leite")
+with col2:
+    nova_qtd = st.number_input("Quantidade:", min_value=1, step=1)
+
+# Ação do botão de adicionar
+if st.button("Adicionar ao Estoque"):
+    if novo_item:
+        item_padronizado = novo_item.strip().upper()
+        if item_padronizado in st.session_state.estoque:
+            st.session_state.estoque[item_padronizado] += nova_qtd
         else:
-            estoque_doacoes[item] = quantidade
-        print(f"\n[SUCESSO] {quantidade} unidade(s) de '{item}' adicionada(s)!")
-    except ValueError:
-        print("\n[ERRO] Por favor, digite apenas números para a quantidade.")
-
-def listar_doacoes():
-    print("\n--- ESTOQUE ATUAL DE DOAÇÕES ---")
-    if not estoque_doacoes:
-        print("O estoque está vazio no momento.")
+            st.session_state.estoque[item_padronizado] = nova_qtd
+        st.success(f"Sucesso! {nova_qtd} de '{item_padronizado}' cadastrado.")
     else:
-        for item, quantidade in estoque_doacoes.items():
-            print(f"- {item}: {quantidade} unidade(s)")
-    print("--------------------------------")
+        st.warning("Por favor, digite o nome do item.")
 
-def retirar_doacao():
-    item = input("Digite o nome do item que deseja retirar: ").strip().upper()
-    if item in estoque_doacoes:
-        try:
-            qtd_retirar = int(input(f"Temos {estoque_doacoes[item]} de '{item}'. Quantas deseja retirar? "))
-            if qtd_retirar <= estoque_doacoes[item]:
-                estoque_doacoes[item] -= qtd_retirar
-                print(f"\n[SUCESSO] Retirada confirmada. Restam {estoque_doacoes[item]} de '{item}'.")
-                if estoque_doacoes[item] == 0:
-                    del estoque_doacoes[item] # Remove o item do estoque se zerar
-            else:
-                print("\n[ERRO] A quantidade pedida é maior que a disponível no estoque.")
-        except ValueError:
-            print("\n[ERRO] Por favor, digite um número válido.")
-    else:
-        print("\n[ERRO] Item não encontrado no estoque.")
+st.divider()
 
-# Loop do Menu Principal
-while True:
-    print("\n=== SISTEMA DE GESTÃO DE DOAÇÕES ===")
-    print("1. Cadastrar nova doação")
-    print("2. Listar doações no estoque")
-    print("3. Retirar doação (Entrega a famílias)")
-    print("4. Sair")
+# SESSÃO 2: VISUALIZAÇÃO DO ESTOQUE
+st.header("📋 Estoque Atual")
+if not st.session_state.estoque:
+    st.info("O estoque está vazio no momento.")
+else:
+    # Transforma o dicionário em um formato visual de tabela
+    dados_tabela = {"Item": list(st.session_state.estoque.keys()), 
+                    "Quantidade": list(st.session_state.estoque.values())}
+    st.table(dados_tabela)
+
+st.divider()
+
+# SESSÃO 3: SAÍDA/ENTREGA DE DOAÇÕES
+st.header("➖ Retirar Doação (Entrega)")
+if st.session_state.estoque:
+    # Cria um menu dropdown (caixa de seleção) com os itens que existem no estoque
+    item_retirar = st.selectbox("Selecione o item para retirar:", list(st.session_state.estoque.keys()))
+    qtd_retirar = st.number_input("Quantidade a retirar:", min_value=1, step=1, key="retirar")
     
-    opcao = input("Escolha uma opção (1-4): ")
-    
-    if opcao == '1':
-        cadastrar_doacao()
-    elif opcao == '2':
-        listar_doacoes()
-    elif opcao == '3':
-        retirar_doacao()
-    elif opcao == '4':
-        print("\nEncerrando o sistema. Obrigado pelo seu trabalho voluntário!")
-        break
-    else:
-        print("\n[ERRO] Opção inválida. Escolha um número de 1 a 4.")
+    if st.button("Confirmar Retirada"):
+        if qtd_retirar <= st.session_state.estoque[item_retirar]:
+            st.session_state.estoque[item_retirar] -= qtd_retirar
+            st.success(f"Retirada confirmada! Restam {st.session_state.estoque[item_retirar]}.")
+            
+            # Remove o item da lista se o estoque dele chegar a zero
+            if st.session_state.estoque[item_retirar] == 0:
+                del st.session_state.estoque[item_retirar]
+                st.rerun() # Atualiza a tela para remover o item visualmente
+        else:
+            st.error("Erro: Quantidade solicitada é maior que o estoque disponível!")
+else:
+    st.write("Não há itens no estoque para retirar.")
