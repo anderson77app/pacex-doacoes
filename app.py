@@ -1,5 +1,41 @@
 import streamlit as st
 
+# ==========================================
+# MENU LATERAL (DESIGN DA PÁGINA)
+# ==========================================
+st.sidebar.header("🎨 Personalizar Visual")
+
+# Seletores de cores e fontes para o usuário
+cor_fundo = st.sidebar.color_picker("Cor do Fundo", "#FFFFFF")
+cor_texto = st.sidebar.color_picker("Cor do Texto", "#333333")
+cor_topicos = st.sidebar.color_picker("Cor dos Títulos", "#005C99")
+fonte = st.sidebar.selectbox("Estilo da Fonte", ["sans-serif", "Arial", "Courier New", "Georgia", "Verdana"])
+
+# Aplicação das escolhas usando CSS customizado
+estilo_css = f"""
+<style>
+    /* Muda a cor de fundo do aplicativo inteiro */
+    .stApp {{
+        background-color: {cor_fundo};
+    }}
+    /* Muda a fonte e a cor do texto padrão */
+    html, body, [class*="css"] {{
+        font-family: '{fonte}', sans-serif;
+        color: {cor_texto};
+    }}
+    /* Muda a cor apenas dos títulos e subtítulos */
+    h1, h2, h3 {{
+        color: {cor_topicos} !important;
+    }}
+</style>
+"""
+st.markdown(estilo_css, unsafe_allow_html=True)
+
+
+# ==========================================
+# CÓDIGO DO SISTEMA DE DOAÇÕES
+# ==========================================
+
 # Inicializa o "banco de dados" na memória da sessão do usuário
 if 'estoque' not in st.session_state:
     st.session_state.estoque = {}
@@ -13,14 +49,12 @@ st.divider() # Cria uma linha separadora visual
 # SESSÃO 1: CADASTRO DE DOAÇÕES
 st.header("➕ Cadastrar Nova Doação")
 
-# Organiza a tela em duas colunas para os campos de digitação
 col1, col2 = st.columns(2)
 with col1:
     novo_item = st.text_input("Nome do Item:", placeholder="Ex: Arroz, Leite")
 with col2:
     nova_qtd = st.number_input("Quantidade:", min_value=1, step=1)
 
-# Ação do botão de adicionar
 if st.button("Adicionar ao Estoque"):
     if novo_item:
         item_padronizado = novo_item.strip().upper()
@@ -39,7 +73,6 @@ st.header("📋 Estoque Atual")
 if not st.session_state.estoque:
     st.info("O estoque está vazio no momento.")
 else:
-    # Transforma o dicionário em um formato visual de tabela
     dados_tabela = {"Item": list(st.session_state.estoque.keys()), 
                     "Quantidade": list(st.session_state.estoque.values())}
     st.table(dados_tabela)
@@ -49,7 +82,6 @@ st.divider()
 # SESSÃO 3: SAÍDA/ENTREGA DE DOAÇÕES
 st.header("➖ Retirar Doação (Entrega)")
 if st.session_state.estoque:
-    # Cria um menu dropdown (caixa de seleção) com os itens que existem no estoque
     item_retirar = st.selectbox("Selecione o item para retirar:", list(st.session_state.estoque.keys()))
     qtd_retirar = st.number_input("Quantidade a retirar:", min_value=1, step=1, key="retirar")
     
@@ -58,10 +90,9 @@ if st.session_state.estoque:
             st.session_state.estoque[item_retirar] -= qtd_retirar
             st.success(f"Retirada confirmada! Restam {st.session_state.estoque[item_retirar]}.")
             
-            # Remove o item da lista se o estoque dele chegar a zero
             if st.session_state.estoque[item_retirar] == 0:
                 del st.session_state.estoque[item_retirar]
-                st.rerun() # Atualiza a tela para remover o item visualmente
+                st.rerun() 
         else:
             st.error("Erro: Quantidade solicitada é maior que o estoque disponível!")
 else:
