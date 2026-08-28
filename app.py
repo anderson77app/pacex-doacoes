@@ -11,19 +11,19 @@ cor_texto = st.sidebar.color_picker("Cor do Texto", "#000000")
 cor_topicos = st.sidebar.color_picker("Cor dos Títulos", "#005C99")
 fonte = st.sidebar.selectbox("Estilo da Fonte", ["sans-serif", "Arial", "Courier New", "Georgia", "Verdana"])
 
-# Aplicação das escolhas usando CSS customizado "forçado"
+# Aplicação das escolhas usando CSS customizado (com proteção para os ícones)
 estilo_css = f"""
 <style>
     /* Fundo da aplicação */
     [data-testid="stAppViewContainer"] {{
         background-color: {cor_fundo} !important;
     }}
-    /* Fundo do cabeçalho superior (para não ficar uma faixa branca) */
+    /* Fundo do cabeçalho superior */
     [data-testid="stHeader"] {{
         background-color: transparent !important;
     }}
-    /* Cor do texto geral e fonte */
-    p, span, label, div {{
+    /* Cor do texto geral e fonte (mirando apenas em textos, ignorando ícones) */
+    p, label, .stMarkdown p {{
         color: {cor_texto} !important;
         font-family: {fonte} !important;
     }}
